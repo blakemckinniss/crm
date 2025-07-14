@@ -5,7 +5,7 @@
 import { initializeChat, addMessageToChat, getSmsChatDisplay } from './chat.js';
 import { initializeModal, configureModal, showApiKeyModal, handleModalInputKeydown, handleValidateAndSaveKey } from './modal.js';
 import { initializeMode, updateModeUI } from './mode.js';
-import { initializeSettings, getSettings, collectSettingsForGeneration, enhanceUserPrompt } from './settings.js';
+import { initializeSettings, getSettings, collectSettingsForGeneration } from './settings.js';
 import { 
     getStoredApiKey, 
     storeApiKey, 
