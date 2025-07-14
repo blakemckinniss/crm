@@ -838,13 +838,17 @@
                 ? wizardState.customCampaign 
                 : `${wizardState.campaignType.replace('-', ' ')} promotion`;
 
-            const prompt = `Generate ${wizardState.numVariations} SMS message variations for ${wizardState.brand}.
-Campaign: ${campaignDescription}
-Tone: ${wizardState.tone}
-Base message idea: ${wizardState.message}
-${wizardState.useEmoji ? 'Include exactly one emoji per message' : 'No emojis'}
-Character limit: ${wizardState.useEmoji ? '40' : '128'} characters
-Include ">>> https://vbs.com/xxxxx" at the end of each message`;
+            const prompt = `Generate exactly ${wizardState.numVariations} SMS message variations for ${wizardState.brand}.
+
+Requirements:
+- Campaign: ${campaignDescription}
+- Tone: ${wizardState.tone}
+- Base message idea: ${wizardState.message}
+- ${wizardState.useEmoji ? 'Include exactly one emoji per message' : 'No emojis'}
+- Character limit: ${wizardState.useEmoji ? '40' : '128'} characters including the URL
+- Each message MUST end with: >>> https://vbs.com/xxxxx
+
+IMPORTANT: Only output the SMS messages themselves, one per line. Do not include any explanations, headers, or numbering.`;
 
             // Show loading state
             const generateBtn = document.getElementById('generate-btn');
@@ -936,19 +940,42 @@ Include ">>> https://vbs.com/xxxxx" at the end of each message`;
         }
 
         function formatMessages(content) {
-            // Split content into individual messages and format them
-            const messages = content.split('\n').filter(line => line.trim());
+            // Split content into individual messages and filter out non-SMS content
+            const lines = content.split('\n').filter(line => line.trim());
+            
+            // Filter out lines that are clearly not SMS messages
+            const messages = lines.filter(line => {
+                // Skip lines that are explanatory headers or contain certain patterns
+                const lowerLine = line.toLowerCase();
+                if (lowerLine.includes('here are') || 
+                    lowerLine.includes('sms message') ||
+                    lowerLine.includes('variations') ||
+                    lowerLine.includes('specification') ||
+                    lowerLine.includes('generated') ||
+                    lowerLine.startsWith('message ') && !lowerLine.includes('>>>') ||
+                    line.length < 20 || // Too short to be a real SMS
+                    (line.match(/^\d+\.\s/) && !line.includes('>>>'))) { // Numbered list without URL
+                    return false;
+                }
+                return true;
+            });
+            
             return messages.map((msg, index) => {
+                // Clean up any leading numbers or bullets
+                msg = msg.replace(/^\d+\.\s*/, '').replace(/^[-•*]\s*/, '').trim();
+                
                 const charCount = msg.length;
-                const charClass = charCount > 128 ? 'text-danger' : charCount > 100 ? 'text-warning' : 'text-success';
+                const maxChars = wizardState.useEmoji ? 40 : 128;
+                const charClass = charCount > maxChars ? 'text-danger' : charCount > maxChars * 0.8 ? 'text-warning' : 'text-success';
+                
                 return `
                     <div class="message-item mb-3 p-3 border rounded">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="badge bg-secondary">Message ${index + 1}</span>
-                            <span class="small ${charClass}">${charCount} chars</span>
+                            <span class="small ${charClass}">${charCount} / ${maxChars} chars</span>
                         </div>
                         <p class="mb-2">${msg}</p>
-                        <button class="btn btn-sm btn-outline-primary" onclick="copyMessage('${msg.replace(/'/g, "\\'")}')">Copy</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="copyMessage('${msg.replace(/'/g, "\\'").replace(/"/g, '\\"')}')">Copy</button>
                     </div>
                 `;
             }).join('');
