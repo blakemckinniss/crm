@@ -129,10 +129,30 @@
 
         .step-content {
             display: none;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .step-content.active {
             display: block;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .step-content.active {
+            animation: fadeInSlide 0.3s ease;
+        }
+        
+        @keyframes fadeInSlide {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .brand-card {
@@ -308,6 +328,39 @@
             color: white;
             border-radius: 8px;
         }
+        
+        .campaign-select {
+            font-size: 1.125rem;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .campaign-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(139, 17, 9, 0.1);
+        }
+        
+        .campaign-select option {
+            padding: 0.5rem;
+        }
+        
+        #campaign-description {
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        #campaign-preview {
+            background-color: #fef1f1;
+            border: 1px solid rgba(139, 17, 9, 0.2);
+            color: var(--dark);
+        }
+        
+        #campaign-preview .alert-heading {
+            color: var(--primary);
+        }
     </style>
 </head>
 
@@ -386,37 +439,26 @@
                 <p class="text-muted mb-4">Select a template or create your own</p>
 
                 <div class="mb-4">
-                    <h6 class="text-uppercase text-muted small mb-3">Popular Templates</h6>
-                    
-                    <div class="template-card" data-template="weekend-special">
-                        <h6 class="mb-1">🎉 Weekend Special</h6>
-                        <p class="small text-muted mb-0">Promote weekend deals and happy hour specials</p>
+                    <label class="form-label">Campaign Type</label>
+                    <div class="position-relative">
+                        <select class="form-select form-select-lg campaign-select" id="campaign-select">
+                            <option value="" disabled selected>Choose a campaign type...</option>
+                            <option value="weekend-special" data-description="Promote weekend deals and happy hour specials">🎉 Weekend Special</option>
+                            <option value="new-menu" data-description="Announce new dishes or seasonal menu items">🍽️ New Menu Launch</option>
+                            <option value="loyalty-reward" data-description="Send exclusive offers to loyalty members">⭐ Loyalty Reward</option>
+                            <option value="flash-sale" data-description="Time-sensitive offers to drive immediate action">⚡ Flash Sale</option>
+                            <option value="event" data-description="Promote holiday specials or themed events">🎊 Special Event</option>
+                            <option value="birthday" data-description="Personal birthday messages with special offers">🎂 Birthday Greeting</option>
+                            <option value="delivery-promo" data-description="Promote delivery and curbside pickup options">🚗 Delivery & Takeout</option>
+                            <option value="custom" data-description="Create your own unique campaign">✏️ Custom Message</option>
+                        </select>
                     </div>
+                    <div id="campaign-description" class="form-text mt-2" style="display: none;"></div>
+                </div>
 
-                    <div class="template-card" data-template="new-menu">
-                        <h6 class="mb-1">🍽️ New Menu Launch</h6>
-                        <p class="small text-muted mb-0">Announce new dishes or seasonal menu items</p>
-                    </div>
-
-                    <div class="template-card" data-template="loyalty-reward">
-                        <h6 class="mb-1">⭐ Loyalty Reward</h6>
-                        <p class="small text-muted mb-0">Send exclusive offers to loyalty members</p>
-                    </div>
-
-                    <div class="template-card" data-template="flash-sale">
-                        <h6 class="mb-1">⚡ Flash Sale</h6>
-                        <p class="small text-muted mb-0">Time-sensitive offers to drive immediate action</p>
-                    </div>
-
-                    <div class="template-card" data-template="event">
-                        <h6 class="mb-1">🎊 Special Event</h6>
-                        <p class="small text-muted mb-0">Promote holiday specials or themed events</p>
-                    </div>
-
-                    <div class="template-card" data-template="custom">
-                        <h6 class="mb-1">✏️ Custom Message</h6>
-                        <p class="small text-muted mb-0">Create your own unique campaign</p>
-                    </div>
+                <div id="campaign-preview" class="alert alert-light" style="display: none;">
+                    <h6 class="alert-heading mb-2">Template Preview</h6>
+                    <p class="mb-0 small" id="template-preview-text"></p>
                 </div>
 
                 <div id="custom-campaign-input" style="display: none;">
@@ -627,22 +669,56 @@
                 });
             });
 
-            // Template selection
-            document.querySelectorAll('.template-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
-                    this.classList.add('selected');
-                    wizardState.campaignType = this.dataset.template;
+            // Campaign dropdown selection
+            const campaignSelect = document.getElementById('campaign-select');
+            const campaignDescription = document.getElementById('campaign-description');
+            const campaignPreview = document.getElementById('campaign-preview');
+            const templatePreviewText = document.getElementById('template-preview-text');
+            
+            campaignSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                wizardState.campaignType = this.value;
+                
+                // Show description
+                if (selectedOption.dataset.description) {
+                    campaignDescription.textContent = selectedOption.dataset.description;
+                    campaignDescription.style.display = 'block';
+                } else {
+                    campaignDescription.style.display = 'none';
+                }
+                
+                // Show/hide custom input
+                const customInput = document.getElementById('custom-campaign-input');
+                if (this.value === 'custom') {
+                    customInput.style.display = 'block';
+                    campaignPreview.style.display = 'none';
+                } else {
+                    customInput.style.display = 'none';
                     
-                    // Show/hide custom input
-                    const customInput = document.getElementById('custom-campaign-input');
-                    if (this.dataset.template === 'custom') {
-                        customInput.style.display = 'block';
-                    } else {
-                        customInput.style.display = 'none';
-                    }
-                });
+                    // Show template preview
+                    showTemplatePreview(this.value);
+                }
             });
+            
+            function showTemplatePreview(templateType) {
+                // Import templates or use predefined examples
+                const templateExamples = {
+                    'weekend-special': '🎉 Italian weekend feast! Unlimited soup & salad all weekend >>> https://vbs.com/xxxxx',
+                    'new-menu': '🍝 NEW! Chicken Marsala ravioli just arrived. Try it today! >>> https://vbs.com/xxxxx',
+                    'loyalty-reward': '⭐ VIP perk! Free appetizer with entrée today. Show this SMS >>> https://vbs.com/xxxxx',
+                    'flash-sale': '⚡ FLASH SALE! 50% off all appetizers next 2 hours only! >>> https://vbs.com/xxxxx',
+                    'event': '🎊 Join our Italian Festival! House wine $5 all day >>> https://vbs.com/xxxxx',
+                    'birthday': '🎂 Happy Birthday! Enjoy a FREE tiramisu on us today! >>> https://vbs.com/xxxxx',
+                    'delivery-promo': '🚗 Free delivery today! Order your Italian favorites now >>> https://vbs.com/xxxxx'
+                };
+                
+                if (templateExamples[templateType]) {
+                    templatePreviewText.textContent = templateExamples[templateType];
+                    campaignPreview.style.display = 'block';
+                } else {
+                    campaignPreview.style.display = 'none';
+                }
+            }
 
             // Quick actions
             document.querySelectorAll('.quick-action').forEach(action => {
@@ -752,14 +828,16 @@
                     break;
                 case 2:
                     if (!wizardState.campaignType) {
-                        alert('Please select a campaign type');
+                        alert('Please select a campaign type from the dropdown');
+                        document.getElementById('campaign-select').focus();
                         return false;
                     }
                     if (wizardState.campaignType === 'custom') {
                         const customInput = document.querySelector('#custom-campaign-input textarea');
                         wizardState.customCampaign = customInput.value;
                         if (!wizardState.customCampaign) {
-                            alert('Please describe your campaign');
+                            alert('Please describe your custom campaign');
+                            customInput.focus();
                             return false;
                         }
                     }
