@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Campaign Wizard - Darden</title>
+    <!-- Bootstrap CSS -->
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary: #8b1109;
+            --primary-light: #a61410;
+            --primary-dark: #6b0d07;
+            --secondary: #6b7280;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --dark: #111827;
+            --light: #f9fafb;
+            --darden-red: #8b1109;
+            --olive-garden-green: #5f8a3a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+        }
+
+        .wizard-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .wizard-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .wizard-header::before {
+            content: '';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 120px;
+            height: 40px;
+            background: url('https://www.darden.com/themes/custom/darden/images/darden-logo.svg') no-repeat center;
+            background-size: contain;
+            opacity: 0.3;
+        }
+
+        .wizard-progress {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 2rem;
+            margin-top: -1rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            right: -50%;
+            height: 2px;
+            background: #e2e8f0;
+            z-index: 0;
+        }
+
+        .progress-step:last-child::before {
+            display: none;
+        }
+
+        .progress-step.active .step-circle {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .progress-step.completed .step-circle {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            position: relative;
+            z-index: 1;
+            font-weight: 600;
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            color: var(--secondary);
+        }
+
+        .wizard-content {
+            padding: 2rem;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .brand-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            margin-bottom: 1rem;
+        }
+
+        .brand-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .brand-card.selected {
+            border-color: var(--primary);
+            background-color: #fef1f1;
+        }
+
+        .template-card {
+            cursor: pointer;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .template-card:hover {
+            border-color: var(--primary);
+            background-color: var(--light);
+        }
+
+        .template-card.selected {
+            border-color: var(--primary);
+            background-color: #fef1f1;
+        }
+
+        .character-counter {
+            position: relative;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .character-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .character-fill {
+            height: 100%;
+            background: var(--success);
+            transition: all 0.3s ease;
+        }
+
+        .character-fill.warning {
+            background: var(--warning);
+        }
+
+        .character-fill.danger {
+            background: var(--danger);
+        }
+
+        .preview-message {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            font-size: 1.125rem;
+            min-height: 100px;
+        }
+
+        .wizard-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-wizard {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .help-tip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--secondary);
+            color: white;
+            font-size: 0.75rem;
+            cursor: help;
+            margin-left: 0.5rem;
+        }
+
+        .quick-action {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-action:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .emoji-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .emoji-option {
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .emoji-option:hover {
+            background: #f8fafc;
+            transform: scale(1.2);
+        }
+        
+        .brand-logo {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .brand-logo img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wizard-container">
+        <!-- Header -->
+        <div class="wizard-header">
+            <h1 class="h3 mb-1">Darden SMS Campaign Wizard</h1>
+            <p class="mb-0">Create engaging restaurant marketing messages</p>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="wizard-progress">
+            <div class="progress-step active" data-step="1">
+                <div class="step-circle">1</div>
+                <div class="step-label">Brand</div>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Campaign</div>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="step-circle">3</div>
+                <div class="step-label">Message</div>
+            </div>
+            <div class="progress-step" data-step="4">
+                <div class="step-circle">4</div>
+                <div class="step-label">Review</div>
+            </div>
+        </div>
+
+        <!-- Wizard Content -->
+        <div class="wizard-content">
+            <!-- Step 1: Brand Selection -->
+            <div class="step-content active" id="step-1">
+                <h2 class="h4 mb-1">Select Your Brand</h2>
+                <p class="text-muted mb-4">Choose which restaurant brand this campaign is for</p>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card brand-card" data-brand="Olive Garden">
+                            <div class="card-body text-center">
+                                <div class="brand-logo mb-3">
+                                    <img src="https://www.darden.com/sites/default/files/2021-03/olive-garden--logo.svg" alt="Olive Garden" class="img-fluid">
+                                </div>
+                                <p class="card-text small text-muted">Italian Kitchen</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card brand-card" data-brand="Cheddars">
+                            <div class="card-body text-center">
+                                <div class="brand-logo mb-3">
+                                    <img src="https://www.darden.com/sites/default/files/2023-06/cheddars-logo.png" alt="Cheddar's" class="img-fluid">
+                                </div>
+                                <p class="card-text small text-muted">Scratch Kitchen</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card brand-card" data-brand="Yardhouse">
+                            <div class="card-body text-center">
+                                <div class="brand-logo mb-3">
+                                    <img src="https://www.darden.com/sites/default/files/2023-06/Yard%20House%20logo_0.png" alt="Yard House" class="img-fluid">
+                                </div>
+                                <p class="card-text small text-muted">Modern American fare</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Campaign Type -->
+            <div class="step-content" id="step-2">
+                <h2 class="h4 mb-1">What's Your Campaign About?</h2>
+                <p class="text-muted mb-4">Select a template or create your own</p>
+
+                <div class="mb-4">
+                    <h6 class="text-uppercase text-muted small mb-3">Popular Templates</h6>
+                    
+                    <div class="template-card" data-template="weekend-special">
+                        <h6 class="mb-1">🎉 Weekend Special</h6>
+                        <p class="small text-muted mb-0">Promote weekend deals and happy hour specials</p>
+                    </div>
+
+                    <div class="template-card" data-template="new-menu">
+                        <h6 class="mb-1">🍽️ New Menu Launch</h6>
+                        <p class="small text-muted mb-0">Announce new dishes or seasonal menu items</p>
+                    </div>
+
+                    <div class="template-card" data-template="loyalty-reward">
+                        <h6 class="mb-1">⭐ Loyalty Reward</h6>
+                        <p class="small text-muted mb-0">Send exclusive offers to loyalty members</p>
+                    </div>
+
+                    <div class="template-card" data-template="flash-sale">
+                        <h6 class="mb-1">⚡ Flash Sale</h6>
+                        <p class="small text-muted mb-0">Time-sensitive offers to drive immediate action</p>
+                    </div>
+
+                    <div class="template-card" data-template="event">
+                        <h6 class="mb-1">🎊 Special Event</h6>
+                        <p class="small text-muted mb-0">Promote holiday specials or themed events</p>
+                    </div>
+
+                    <div class="template-card" data-template="custom">
+                        <h6 class="mb-1">✏️ Custom Message</h6>
+                        <p class="small text-muted mb-0">Create your own unique campaign</p>
+                    </div>
+                </div>
+
+                <div id="custom-campaign-input" style="display: none;">
+                    <label class="form-label">Describe Your Campaign</label>
+                    <textarea class="form-control" rows="3" placeholder="E.g., Promote our new summer cocktail menu with a buy-one-get-one offer"></textarea>
+                </div>
+            </div>
+
+            <!-- Step 3: Message Creation -->
+            <div class="step-content" id="step-3">
+                <h2 class="h4 mb-1">Craft Your Message</h2>
+                <p class="text-muted mb-4">We'll help you create the perfect SMS</p>
+
+                <div class="mb-4">
+                    <label class="form-label">Quick Actions <span class="help-tip" title="Click to add to your message">?</span></label>
+                    <div>
+                        <span class="quick-action" data-insert="TODAY ONLY">TODAY ONLY</span>
+                        <span class="quick-action" data-insert="Limited time">Limited time</span>
+                        <span class="quick-action" data-insert="Free">Free</span>
+                        <span class="quick-action" data-insert="50% off">50% off</span>
+                        <span class="quick-action" data-insert="BOGO">BOGO</span>
+                        <span class="quick-action" data-insert="Happy Hour">Happy Hour</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Your Message</label>
+                    <textarea id="message-input" class="form-control" rows="4" placeholder="Start typing or use the quick actions above..."></textarea>
+                    
+                    <div class="character-counter">
+                        <div class="character-bar">
+                            <div class="character-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="character-count">0 / 160 characters</span>
+                            <span class="character-status text-success">Great length! 👍</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="use-emoji">
+                        <label class="form-check-label" for="use-emoji">
+                            Add an emoji to your message
+                        </label>
+                    </div>
+                    
+                    <div id="emoji-picker" class="emoji-picker" style="display: none;">
+                        <span class="emoji-option">🎉</span>
+                        <span class="emoji-option">🍕</span>
+                        <span class="emoji-option">🍔</span>
+                        <span class="emoji-option">🌮</span>
+                        <span class="emoji-option">🥗</span>
+                        <span class="emoji-option">🍻</span>
+                        <span class="emoji-option">🍹</span>
+                        <span class="emoji-option">☀️</span>
+                        <span class="emoji-option">⭐</span>
+                        <span class="emoji-option">💰</span>
+                        <span class="emoji-option">🎁</span>
+                        <span class="emoji-option">❤️</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Tone of Voice</label>
+                    <select class="form-select" id="tone-select">
+                        <option value="friendly">Friendly & Warm</option>
+                        <option value="casual">Casual & Fun</option>
+                        <option value="urgent">Urgent & Time-Sensitive</option>
+                        <option value="professional">Professional</option>
+                        <option value="celebratory">Celebratory</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-outline-primary" id="generate-variations">
+                    <span class="spinner-border spinner-border-sm me-2" style="display: none;"></span>
+                    Generate Message Variations
+                </button>
+            </div>
+
+            <!-- Step 4: Review & Send -->
+            <div class="step-content" id="step-4">
+                <h2 class="h4 mb-1">Review Your Campaign</h2>
+                <p class="text-muted mb-4">Everything look good? Let's generate your messages!</p>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-sm-4"><strong>Brand:</strong></div>
+                            <div class="col-sm-8" id="review-brand">-</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-4"><strong>Campaign Type:</strong></div>
+                            <div class="col-sm-8" id="review-campaign">-</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-4"><strong>Tone:</strong></div>
+                            <div class="col-sm-8" id="review-tone">-</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4"><strong>Message Preview:</strong></div>
+                            <div class="col-sm-8">
+                                <div class="preview-message" id="review-message">
+                                    Your message will appear here...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">How many variations would you like?</label>
+                    <select class="form-select" id="num-variations">
+                        <option value="1">1 message</option>
+                        <option value="3" selected>3 variations</option>
+                        <option value="5">5 variations</option>
+                        <option value="10">10 variations</option>
+                    </select>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Ready to generate!</strong> Click below to create your SMS messages using AI.
+                </div>
+            </div>
+        </div>
+
+        <!-- Wizard Actions -->
+        <div class="wizard-actions">
+            <button class="btn btn-outline-secondary btn-wizard" id="prev-btn" style="display: none;">
+                ← Previous
+            </button>
+            <button class="btn btn-primary btn-wizard ms-auto" id="next-btn">
+                Next →
+            </button>
+            <button class="btn btn-success btn-wizard ms-auto" id="generate-btn" style="display: none;">
+                Generate Messages ✨
+            </button>
+        </div>
+    </div>
+
+    <!-- API Key Modal -->
+    <div class="modal fade" id="api-key-modal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">OpenRouter API Key Required</h5>
+                </div>
+                <div class="modal-body">
+                    <p>To use the SMS wizard, you'll need an OpenRouter API key.</p>
+                    <p class="small text-muted">Your key is stored locally and never sent to any server.</p>
+                    <div class="mb-3">
+                        <label for="api-key-input" class="form-label">API Key:</label>
+                        <input type="password" class="form-control" id="api-key-input" placeholder="sk-or-v1-...">
+                    </div>
+                    <div class="text-center">
+                        <a href="https://openrouter.ai/keys" target="_blank" class="btn btn-link">Get an API Key →</a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="save-api-key">Save & Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="bootstrap.bundle.min.js"></script>
+    
+    <!-- Wizard JavaScript -->
+    <script>
+        // Wizard state
+        let wizardState = {
+            currentStep: 1,
+            brand: 'Olive Garden',
+            campaignType: null,
+            customCampaign: '',
+            message: '',
+            tone: 'friendly',
+            useEmoji: false,
+            selectedEmoji: '',
+            numVariations: 3
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for API key
+            if (!localStorage.getItem('openrouter_api_key')) {
+                const modal = new bootstrap.Modal(document.getElementById('api-key-modal'));
+                modal.show();
+            }
+
+            // API key save handler
+            document.getElementById('save-api-key').addEventListener('click', function() {
+                const apiKey = document.getElementById('api-key-input').value.trim();
+                if (apiKey) {
+                    localStorage.setItem('openrouter_api_key', apiKey);
+                    bootstrap.Modal.getInstance(document.getElementById('api-key-modal')).hide();
+                }
+            });
+
+            // Brand selection
+            document.querySelectorAll('.brand-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.brand-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    wizardState.brand = this.dataset.brand;
+                });
+            });
+
+            // Template selection
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    wizardState.campaignType = this.dataset.template;
+                    
+                    // Show/hide custom input
+                    const customInput = document.getElementById('custom-campaign-input');
+                    if (this.dataset.template === 'custom') {
+                        customInput.style.display = 'block';
+                    } else {
+                        customInput.style.display = 'none';
+                    }
+                });
+            });
+
+            // Quick actions
+            document.querySelectorAll('.quick-action').forEach(action => {
+                action.addEventListener('click', function() {
+                    const messageInput = document.getElementById('message-input');
+                    const insertText = this.dataset.insert;
+                    messageInput.value += (messageInput.value ? ' ' : '') + insertText;
+                    updateCharacterCount();
+                });
+            });
+
+            // Character counter
+            document.getElementById('message-input').addEventListener('input', updateCharacterCount);
+
+            // Emoji toggle
+            document.getElementById('use-emoji').addEventListener('change', function() {
+                const emojiPicker = document.getElementById('emoji-picker');
+                emojiPicker.style.display = this.checked ? 'flex' : 'none';
+                wizardState.useEmoji = this.checked;
+            });
+
+            // Emoji selection
+            document.querySelectorAll('.emoji-option').forEach(emoji => {
+                emoji.addEventListener('click', function() {
+                    wizardState.selectedEmoji = this.textContent;
+                    const messageInput = document.getElementById('message-input');
+                    messageInput.value += ' ' + this.textContent;
+                    updateCharacterCount();
+                });
+            });
+
+            // Navigation
+            document.getElementById('prev-btn').addEventListener('click', previousStep);
+            document.getElementById('next-btn').addEventListener('click', nextStep);
+            document.getElementById('generate-btn').addEventListener('click', generateMessages);
+
+            // Generate variations button
+            document.getElementById('generate-variations').addEventListener('click', function() {
+                generatePreview();
+            });
+        });
+
+        function updateCharacterCount() {
+            const message = document.getElementById('message-input').value;
+            const length = message.length;
+            const maxLength = wizardState.useEmoji ? 40 : 128;
+            
+            const counter = document.querySelector('.character-count');
+            const fill = document.querySelector('.character-fill');
+            const status = document.querySelector('.character-status');
+            
+            counter.textContent = `${length} / ${maxLength} characters`;
+            
+            const percentage = (length / maxLength) * 100;
+            fill.style.width = Math.min(percentage, 100) + '%';
+            
+            if (percentage > 100) {
+                fill.classList.add('danger');
+                fill.classList.remove('warning');
+                status.textContent = 'Too long! 😱';
+                status.className = 'character-status text-danger';
+            } else if (percentage > 80) {
+                fill.classList.add('warning');
+                fill.classList.remove('danger');
+                status.textContent = 'Getting close! 😅';
+                status.className = 'character-status text-warning';
+            } else {
+                fill.classList.remove('warning', 'danger');
+                status.textContent = 'Great length! 👍';
+                status.className = 'character-status text-success';
+            }
+            
+            wizardState.message = message;
+        }
+
+        function previousStep() {
+            if (wizardState.currentStep > 1) {
+                wizardState.currentStep--;
+                updateWizardDisplay();
+            }
+        }
+
+        function nextStep() {
+            // Validate current step
+            if (!validateStep(wizardState.currentStep)) {
+                return;
+            }
+
+            if (wizardState.currentStep < 4) {
+                wizardState.currentStep++;
+                updateWizardDisplay();
+                
+                // Update review if moving to step 4
+                if (wizardState.currentStep === 4) {
+                    updateReview();
+                }
+            }
+        }
+
+        function validateStep(step) {
+            switch(step) {
+                case 1:
+                    if (!wizardState.brand) {
+                        alert('Please select a restaurant brand');
+                        return false;
+                    }
+                    break;
+                case 2:
+                    if (!wizardState.campaignType) {
+                        alert('Please select a campaign type');
+                        return false;
+                    }
+                    if (wizardState.campaignType === 'custom') {
+                        const customInput = document.querySelector('#custom-campaign-input textarea');
+                        wizardState.customCampaign = customInput.value;
+                        if (!wizardState.customCampaign) {
+                            alert('Please describe your campaign');
+                            return false;
+                        }
+                    }
+                    break;
+                case 3:
+                    if (!wizardState.message) {
+                        alert('Please enter a message');
+                        return false;
+                    }
+                    wizardState.tone = document.getElementById('tone-select').value;
+                    break;
+            }
+            return true;
+        }
+
+        function updateWizardDisplay() {
+            // Update progress steps
+            document.querySelectorAll('.progress-step').forEach((step, index) => {
+                if (index < wizardState.currentStep - 1) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else if (index === wizardState.currentStep - 1) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            });
+
+            // Update content
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`step-${wizardState.currentStep}`).classList.add('active');
+
+            // Update buttons
+            document.getElementById('prev-btn').style.display = wizardState.currentStep > 1 ? 'block' : 'none';
+            document.getElementById('next-btn').style.display = wizardState.currentStep < 4 ? 'block' : 'none';
+            document.getElementById('generate-btn').style.display = wizardState.currentStep === 4 ? 'block' : 'none';
+        }
+
+        function updateReview() {
+            document.getElementById('review-brand').textContent = wizardState.brand;
+            
+            let campaignText = wizardState.campaignType;
+            if (wizardState.campaignType === 'custom') {
+                campaignText = wizardState.customCampaign;
+            } else {
+                // Convert template name to readable format
+                campaignText = campaignText.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            }
+            document.getElementById('review-campaign').textContent = campaignText;
+            
+            document.getElementById('review-tone').textContent = 
+                document.querySelector(`#tone-select option[value="${wizardState.tone}"]`).textContent;
+            
+            document.getElementById('review-message').textContent = wizardState.message;
+            
+            wizardState.numVariations = parseInt(document.getElementById('num-variations').value);
+        }
+
+        function generatePreview() {
+            // This would generate a preview using the template
+            alert('Preview generation would happen here!');
+        }
+
+        async function generateMessages() {
+            const apiKey = localStorage.getItem('openrouter_api_key');
+            if (!apiKey) {
+                alert('API key not found. Please refresh and enter your key.');
+                return;
+            }
+
+            // Prepare the request based on wizard state
+            const campaignDescription = wizardState.campaignType === 'custom' 
+                ? wizardState.customCampaign 
+                : `${wizardState.campaignType.replace('-', ' ')} promotion`;
+
+            const prompt = `Generate ${wizardState.numVariations} SMS message variations for ${wizardState.brand}.
+                Campaign: ${campaignDescription}
+                Tone: ${wizardState.tone}
+                Base message idea: ${wizardState.message}
+                ${wizardState.useEmoji ? 'Include exactly one emoji per message' : 'No emojis'}
+                Character limit: ${wizardState.useEmoji ? '40' : '128'} characters
+                Include ">>> https://vbs.com/xxxxx" at the end of each message`;
+
+            // Show loading state
+            const generateBtn = document.getElementById('generate-btn');
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+
+            try {
+                // This would make the actual API call
+                // For now, we'll simulate it
+                setTimeout(() => {
+                    // Redirect to main app with parameters
+                    const params = new URLSearchParams({
+                        brand: wizardState.brand,
+                        campaign: wizardState.campaignType,
+                        message: wizardState.message,
+                        tone: wizardState.tone,
+                        numResults: wizardState.numVariations,
+                        useEmojis: wizardState.useEmoji
+                    });
+                    
+                    window.location.href = `index.html?wizard=true&${params.toString()}`;
+                }, 2000);
+            } catch (error) {
+                alert('Error generating messages. Please try again.');
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = 'Generate Messages ✨';
+            }
+        }
+    </script>
+</body>
+
+</html>
