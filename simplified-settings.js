@@ -2,7 +2,7 @@
 export class SimplifiedSettings {
     constructor(options = {}) {
         this.options = {
-            defaultModel: 'google/gemini-2.0-flash-exp:free',
+            defaultModel: 'google/gemini-2.5-flash',
             defaultNumResults: 3,
             defaultTone: 'friendly',
             ...options
@@ -142,7 +142,7 @@ export class SimplifiedSettings {
                         <div class="setting-group">
                             <label class="setting-label">AI Model</label>
                             <select class="setting-select" id="ai-model">
-                                <option value="google/gemini-2.0-flash-exp:free">Free Model (Recommended)</option>
+                                <option value="google/gemini-2.5-flash">Gemini 2.5 Flash (Recommended)</option>
                                 <option value="openai/gpt-4o-mini">GPT-4 Mini (Faster)</option>
                                 <option value="anthropic/claude-3.5-haiku">Claude Haiku (Creative)</option>
                             </select>

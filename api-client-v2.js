@@ -102,7 +102,7 @@ export async function generateContent(params) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: settings.ai_model || 'google/gemini-2.0-flash-exp:free',
+                model: settings.ai_model || 'google/gemini-2.5-flash',
                 messages: messages,
                 temperature: settings.temperature || 0.8,
                 top_p: settings.top_p || 0.7,
@@ -305,7 +305,7 @@ export async function enhancePrompt(apiKey, prompt, settings = {}) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'google/gemini-2.0-flash-exp:free',
+                model: 'google/gemini-2.5-flash',
                 messages: messages,
                 temperature: 0.7,
                 max_tokens: 200
@@ -360,7 +360,7 @@ export async function generatePromptFromTopicTone(apiKey, topic, tone, mode = 's
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'google/gemini-2.0-flash-exp:free',
+                model: 'google/gemini-2.5-flash',
                 messages: messages,
                 temperature: 0.7,
                 max_tokens: 150
